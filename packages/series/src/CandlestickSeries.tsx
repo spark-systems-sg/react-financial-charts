@@ -13,7 +13,8 @@ export interface ICandle {
     readonly width: number;
     readonly wick: {
         readonly stroke: string;
-        readonly x: number;
+        readonly x1: number;
+        readonly x2: number;
         readonly y1: number;
         readonly y2: number;
         readonly y3: number;
@@ -27,6 +28,7 @@ export interface CandlestickSeriesProps {
     readonly fill?: string | ((data: any) => string);
     readonly stroke?: string | ((data: any) => string);
     readonly wickStroke?: string | ((data: any) => string);
+    readonly wickWidthRatio?: number;
     readonly width?: number | ((props: CandlestickSeriesProps, moreProps: any) => number);
     readonly widthRatio?: number;
     readonly yAccessor: (data: any) => { open: number; high: number; low: number; close: number } | undefined;
@@ -39,6 +41,7 @@ export class CandlestickSeries extends React.Component<CandlestickSeriesProps> {
         fill: (d: any) => (d.close > d.open ? "#26a69a" : "#ef5350"),
         stroke: "none",
         wickStroke: (d: any) => (d.close > d.open ? "#26a69a" : "#ef5350"),
+        wickWidthRatio: 0,
         width: plotDataLengthBarWidth,
         widthRatio: 0.8,
         yAccessor: (d: any) => ({ open: d.open, high: d.high, low: d.low, close: d.close }),
@@ -74,9 +77,8 @@ export class CandlestickSeries extends React.Component<CandlestickSeriesProps> {
             ctx.fillStyle = key;
             values.forEach((each) => {
                 const d = each.wick;
-
-                ctx.fillRect(d.x - 0.5, d.y1, 1, d.y2 - d.y1);
-                ctx.fillRect(d.x - 0.5, d.y3, 1, d.y4 - d.y3);
+                ctx.fillRect(d.x1, d.y1, d.x2 - d.x1, d.y2 - d.y1);
+                ctx.fillRect(d.x1, d.y3, d.x2 - d.x1, d.y4 - d.y3);
             });
         });
 
@@ -101,8 +103,6 @@ export class CandlestickSeries extends React.Component<CandlestickSeriesProps> {
                 values.forEach((d) => {
                     if (d.width <= 1) {
                         ctx.fillRect(d.x - 0.5, d.y, 1, d.height);
-                    } else if (d.height === 0) {
-                        ctx.fillRect(d.x - 0.5, d.y, d.width, 1);
                     } else {
                         ctx.fillRect(d.x - 0.5, d.y, d.width, d.height);
                         if (strokeKey !== "none") {
@@ -120,7 +120,13 @@ export class CandlestickSeries extends React.Component<CandlestickSeriesProps> {
         yScale: ScaleContinuousNumeric<number, number>,
         plotData: any[],
     ) => {
-        const { fill: fillProp, stroke: strokeProp, yAccessor, wickStroke: wickStrokeProp } = this.props;
+        const {
+            fill: fillProp,
+            stroke: strokeProp,
+            yAccessor,
+            wickStroke: wickStrokeProp,
+            wickWidthRatio,
+        } = this.props;
 
         const fill = functor(fillProp);
         const stroke = functor(strokeProp);
@@ -137,11 +143,7 @@ export class CandlestickSeries extends React.Component<CandlestickSeriesProps> {
         return plotData
             .filter((d) => {
                 const ohlc = yAccessor(d);
-                if (ohlc === undefined) {
-                    return false;
-                }
-
-                return true;
+                return ohlc !== undefined;
             })
             .map((d) => {
                 const ohlc = yAccessor(d);
@@ -151,22 +153,34 @@ export class CandlestickSeries extends React.Component<CandlestickSeriesProps> {
 
                 const xValue = xAccessor(d);
                 const x = xScale(xValue);
-                const y = Math.round(yScale(Math.max(ohlc.open, ohlc.close)));
-                const height = Math.max(1, Math.round(Math.abs(yScale(ohlc.open) - yScale(ohlc.close))));
+                let y = Math.round(yScale(Math.max(ohlc.open, ohlc.close)));
+                const width = offset * 2;
+                const wickOffset =
+                    wickWidthRatio && wickWidthRatio > 0 ? Math.max((width * wickWidthRatio) / 2, 1) : 0.5;
+                let height = Math.max(1, Math.round(Math.abs(yScale(ohlc.open) - yScale(ohlc.close))));
+                /*
+                force candle height to be at least wick width for aesthetic reasons
+                high wickWidthRatios values can therefore lead to visual misrepresentations
+                 */
+                if (height < 2 * wickOffset) {
+                    height = 2 * wickOffset;
+                    y -= wickOffset;
+                }
 
                 return {
                     x: x - offset,
                     y,
                     wick: {
                         stroke: wickStroke(ohlc),
-                        x,
+                        x1: x - wickOffset,
+                        x2: x + wickOffset,
                         y1: Math.round(yScale(ohlc.high)),
                         y2: y,
                         y3: y + height,
                         y4: Math.round(yScale(ohlc.low)),
                     },
                     height,
-                    width: offset * 2,
+                    width,
                     fill: fill(ohlc),
                     stroke: stroke(ohlc),
                     direction: ohlc.close - ohlc.open,
