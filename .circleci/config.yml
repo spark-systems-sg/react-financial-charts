@@ -1,0 +1,137 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@5.1.0
+
+parameters:
+  release:
+    type: boolean
+    default: false
+
+executors:
+  standard_executor:
+    docker:
+      - image: cimg/node:18.14
+    resource_class: medium
+
+#aliases:
+#  - &install_dependencies
+#
+
+jobs:
+  # included before the hold job to prevent the approval to be pending when pipeline is skipped using [ci skip]
+  # see https://discuss.circleci.com/t/skip-ci-still-triggers-workflow/32133
+  pre_approval:
+    executor: standard_executor
+    steps:
+      - run:
+          name: Approve to trigger a Version Release
+          command: echo "Pre Approval"
+  build:
+    executor: standard_executor
+    steps:
+      - checkout
+      - restore_cache:
+          key: v1-deps-{{ checksum "package-lock.json" }}
+      - run:
+          name: Install Dependencies
+          command: npm install --no-save
+      - save_cache:
+          key: v1-deps-{{ checksum "package-lock.json" }}
+          paths:
+            - node_modules
+      - run:
+          name: Build
+          # building necessary modules only
+          command: |
+            npm run build:core
+            npm run build -- --scope @spark/react-financial-charts-series
+
+  release:
+    executor: standard_executor
+    steps:
+      - checkout
+      - restore_cache:
+          key: v1-deps-{{ checksum "package-lock.json" }}
+      - run:
+          name: Install Dependencies
+          command: npm install --no-save
+      - save_cache:
+          key: v1-deps-{{ checksum "package-lock.json" }}
+          paths:
+            - node_modules
+      - run:
+          name: Release
+          # release requires environment variable GH_TOKEN (github access token)
+          command: |
+            remote_url=$(git remote get-url origin)
+            if [[ $remote_url == *"github.com"* ]]; then
+                https_url=${remote_url/git@github.com:/https:\/\/$GH_TOKEN@github.com\/}
+                echo "adding upstream remote for: $https_url"
+                git remote add upstream $https_url
+            else
+                echo "The 'origin' remote is not a GitHub repository."
+                exit 1
+            fi
+            git config --global user.email "devopls@sparksystems.sg"
+            git config --global user.name "Devops"
+            git push -u upstream --all
+            npm run release:pre -- --git-remote upstream --allow-branch $CIRCLE_BRANCH
+
+  publish:
+    executor: standard_executor
+    steps:
+      - checkout
+      - restore_cache:
+          key: v1-deps-{{ checksum "package-lock.json" }}
+      - run:
+          name: Install Dependencies
+          command: npm install --no-save
+      - save_cache:
+          key: v1-deps-{{ checksum "package-lock.json" }}
+          paths:
+            - node_modules
+      - run:
+          name: NPM Publish
+          #requires env variables, see https://github.com/kenany/npm-cli-login#usage
+          command: |
+            npm install @kenan/npm-cli-login --no-save
+            npx npm-cli-login
+            npx lerna publish from-git --yes --loglevel silly
+
+workflows:
+  ci_pipeline:
+    when:
+      or:
+        - matches:
+            pattern: '^(main|master)$'
+            value: << pipeline.git.branch >>
+        - matches:
+            pattern: '^.*(FE|PA|RC).*'
+            value: << pipeline.git.branch >>
+    jobs:
+      - build
+
+  release:
+    when:
+      matches:
+        pattern: '^.*(PA|RC).*'
+        value: << pipeline.git.branch >>
+    jobs:
+      - pre_approval
+      - hold:
+          type: approval
+          requires:
+            - pre_approval
+      - release:
+          requires:
+            - hold
+
+  publish:
+    jobs:
+      - publish:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/

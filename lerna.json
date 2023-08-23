@@ -16,7 +16,7 @@
             "conventionalCommits": true,
             "createRelease": "github",
             "gitRemote": "upstream",
-            "message": "chore(release): publish %v"
+            "message": "chore(release): publish %v [skip ci]"
         }
     },
     "ignoreChanges": ["**/__fixtures__/**", "**/__tests__/**", "**/*.md"]
