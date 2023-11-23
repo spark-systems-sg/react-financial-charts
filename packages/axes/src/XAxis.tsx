@@ -22,6 +22,7 @@ export interface XAxisProps<T extends number | Date> {
     readonly showGridLines?: boolean;
     readonly showTicks?: boolean;
     readonly showTickLabel?: boolean;
+    readonly tickLabelLineBreak?: boolean;
     readonly strokeStyle?: string;
     readonly strokeWidth?: number;
     readonly tickFormat?: (value: T) => string;
@@ -56,6 +57,7 @@ export class XAxis<T extends number | Date> extends React.Component<XAxisProps<T
         showGridLines: false,
         showTicks: true,
         showTickLabel: true,
+        tickLabelLineBreak: false,
         strokeStyle: "#000000",
         strokeWidth: 1,
         tickPadding: 4,

@@ -39,6 +39,7 @@ interface AxisProps {
     readonly showGridLines?: boolean;
     readonly showTicks?: boolean;
     readonly showTickLabel?: boolean;
+    readonly tickLabelLineBreak?: boolean;
     readonly strokeStyle: string;
     readonly strokeWidth: number;
     readonly tickFormat?: (data: any) => string;
@@ -397,11 +398,12 @@ const drawEachTick = (ctx: CanvasRenderingContext2D, tick: any, result: any) => 
 };
 
 const drawEachTickLabel = (ctx: CanvasRenderingContext2D, tick: any, result: any) => {
-    const { canvas_dy, format } = result;
-
+    const { canvas_dy, format, tickLabelLineBreak, fontSize } = result;
     const text = format(tick.value);
-
     ctx.beginPath();
 
-    ctx.fillText(text, tick.labelX, tick.labelY + canvas_dy);
+    const textLines = tickLabelLineBreak && typeof text === "string" ? text.split("\n") : [text];
+    textLines.forEach((line: string, i: number) => {
+        ctx.fillText(line, tick.labelX, tick.labelY + canvas_dy + i * (fontSize + fontSize / 6));
+    });
 };
