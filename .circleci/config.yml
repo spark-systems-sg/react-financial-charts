@@ -73,10 +73,10 @@ jobs:
                 echo "The 'origin' remote is not a GitHub repository."
                 exit 1
             fi
-            git config --global user.email "devopls@sparksystems.sg"
+            git config --global user.email "devops@sparksystems.sg"
             git config --global user.name "Devops"
             git push -u upstream --all
-            npm run release:pre -- --git-remote upstream --allow-branch $CIRCLE_BRANCH
+            npm run release -- --git-remote upstream --allow-branch $CIRCLE_BRANCH
 
   publish:
     executor: standard_executor
