@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.1.0](https://github.com/spark-systems-sg/react-financial-charts/compare/v2.0.1...v2.1.0) (2023-11-23)
+
+### Features
+
+-   added support for line breaks in tick label ([91737b1](https://github.com/spark-systems-sg/react-financial-charts/commit/91737b18c6561b4cdf80c22efd9ffeea3e3f6abd))
+-   allow extended wick width for candlestick ([205819e](https://github.com/spark-systems-sg/react-financial-charts/commit/205819eb4d3179429effe8364f1174780dd497c3))
+-   initial circleci pipeline ([cb2364f](https://github.com/spark-systems-sg/react-financial-charts/commit/cb2364ff1cdf1524f388afd394baa69990b2fa8a))
+
 ## [2.0.1](https://github.com/markmcdowell/react-financial-charts/compare/v2.0.0...v2.0.1) (2023-05-13)
 
 **Note:** Version bump only for package root
