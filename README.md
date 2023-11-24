@@ -1,15 +1,18 @@
 # React Financial Charts: Spark Fork
 
 This repository is a fork of [react-financial-charts](https://github.com/react-financial/react-financial-charts/) with minor UI customizations.
-Customizations at this point are limited to Candlestick chart in the `series` package.
+Customizations at this point are limited to the `series` and `axes` packages.
 
 ### Use the forked library
 1. Add the spark npm repository to your `.npmrc` \
    `npm config set @spark:registry https://tzawsus001.sparksystems.sg:8443/`
-2. Install the `series` package with the `@spark` scope \
-   `npm install @spark/react-finacial-charts-series`
-3. Import from the `series` package \
-   `import { CandlestickSeries } from '@spark/react-financial-charts-series';`
+2. Install the packages with the `@spark` scope \
+   `npm install @spark/react-finacial-charts-series @spark/react-financial-charts-axes`
+3. Import from the components as required
+   ```
+   import { CandlestickSeries } from '@spark/react-financial-charts-series';
+   import { XAxis } from '@spark/react-financial-charts-axes';
+   ```
    
 ### Create a release
 1. Create a `-RC` or `-PA` branch
