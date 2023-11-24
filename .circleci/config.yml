@@ -19,6 +19,14 @@ executors:
 #
 
 jobs:
+  # included before the hold job to prevent the approval to be pending when pipeline is skipped using [ci skip]
+  # see https://discuss.circleci.com/t/skip-ci-still-triggers-workflow/32133
+  pre_approval:
+    executor: standard_executor
+    steps:
+      - run:
+          name: Approve to trigger a Version Release
+          command: echo "Pre Approval"
   build:
     executor: standard_executor
     steps:
@@ -65,10 +73,10 @@ jobs:
                 echo "The 'origin' remote is not a GitHub repository."
                 exit 1
             fi
-            git config --global user.email "devopls@sparksystems.sg"
+            git config --global user.email "devops@sparksystems.sg"
             git config --global user.name "Devops"
             git push -u upstream --all
-            npm run release:pre -- --git-remote upstream --allow-branch $CIRCLE_BRANCH
+            npm run release -- --git-remote upstream --allow-branch $CIRCLE_BRANCH
 
   publish:
     executor: standard_executor
@@ -104,22 +112,26 @@ workflows:
     jobs:
       - build
 
-  release_version:
+  release:
     when:
       matches:
         pattern: '^.*(PA|RC).*'
         value: << pipeline.git.branch >>
     jobs:
+      - pre_approval
       - hold:
           type: approval
+          requires:
+            - pre_approval
       - release:
           requires:
             - hold
 
-  publish_version:
-    when:
-        matches:
-          pattern: '^v.*'
-          value: << pipeline.git.tag >>
+  publish:
     jobs:
-      - publish
+      - publish:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
