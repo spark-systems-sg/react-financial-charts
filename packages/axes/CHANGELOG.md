@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.1.0](https://github.com/reactivemarkets/react-financial-charts/compare/v2.0.1...v2.1.0) (2023-11-23)
+
+### Features
+
+-   added support for line breaks in tick label ([91737b1](https://github.com/reactivemarkets/react-financial-charts/commit/91737b18c6561b4cdf80c22efd9ffeea3e3f6abd))
+
 # [2.0.0](https://github.com/reactivemarkets/react-financial-charts/compare/v1.3.2...v2.0.0) (2023-05-12)
 
 ### Bug Fixes
