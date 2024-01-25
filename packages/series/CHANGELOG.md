@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.1.0](https://github.com/reactivemarkets/react-financial-charts/compare/v2.0.1...v2.1.0) (2024-01-25)
+
+### Features
+
+-   allow extended wick width for candlestick ([205819e](https://github.com/reactivemarkets/react-financial-charts/commit/205819eb4d3179429effe8364f1174780dd497c3))
+
 # [2.0.0](https://github.com/reactivemarkets/react-financial-charts/compare/v1.3.2...v2.0.0) (2023-05-12)
 
 ### Bug Fixes
