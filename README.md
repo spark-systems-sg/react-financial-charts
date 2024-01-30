@@ -5,7 +5,7 @@ Customizations at this point are limited to the `series` and `axes` packages.
 
 ### Use the forked library
 1. Add the spark npm repository to your `.npmrc` \
-   `npm config set @spark:registry https://tzawsus001.sparksystems.sg:8443/`
+   `npm config set @spark:registry https://artifactoryus.sparksystems.sg:8443`
 2. Install the packages with the `@spark` scope \
    `npm install @spark/react-finacial-charts-series @spark/react-financial-charts-axes`
 3. Import from the components as required
